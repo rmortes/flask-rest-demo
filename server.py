@@ -19,5 +19,15 @@ def index():
     }
     return render("index.html", context)
 
+@app.route('/n/<int:min_num>/<int:max_num>')
+def n(min_num, max_num):
+    numeros = range(min_num, max_num) # Esta función crea una array con todos los números de min a max, por ejemplo [0,1,2,3,4,5,6,7,8,9]
+    context = {
+        "min_num": min_num,
+        "max_num": max_num,
+        "numeros": numeros
+    }
+    return render("index.html", context)
+
 if __name__ == "__main__":
     app.run('0.0.0.0', 8080, debug=True)

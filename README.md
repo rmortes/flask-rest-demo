@@ -82,3 +82,23 @@ def index():
 ```
 
 ¡Ahora la plantilla se ve como te tiene que ver!
+
+## Cuarto paso: Pasando argumentos
+
+¿Y si tengo que pasarle argumentos a una URL?
+Pongamos el ejemplo de querer especificar, en la URl, que número quiero que sea el primero, y cual quiero que sea el último. En este caso podríamos usar una caracterísitica de Flask para pasar argumentos a una función de vista.
+
+Poganmos que la nueva ruta va a ser `/n/0/10`. Para eso creamos una nueva función:
+```python
+@app.route('/n/<int:min_num>/<int:max_num>')
+def n(min_num, max_num):
+    numeros = range(min_num, max_num) # Esta función crea una array con todos los números de min a max, por ejemplo [0,1,2,3,4,5,6,7,8,9]
+    context = {
+        "min_num": min_num,
+        "max_num": max_num,
+        "numeros": numeros
+    }
+    return render("index.html", context)
+```
+
+Intenta acceder ahora a [localhost:8080/n/7/12](localhost:8080/n/7/12). ¡Todo está funcionando!
