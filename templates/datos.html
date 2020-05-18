@@ -1,0 +1,11 @@
+<h1>Datos</h1>
+<table style="width:100%">
+  <tr>
+    {% for title in titles %}<th>{{title}}</th>{% endfor %}
+  </tr>
+  {% for row in results %}
+  <tr>
+    {% for col in row.values() %}<td>{{col}}</td>{% endfor %}
+  </tr>
+  {% endfor %}
+</table>

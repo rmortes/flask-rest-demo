@@ -12,7 +12,7 @@ Para esta demostración vamos a usar:
 
 Para ejecutar el primer paso tendremos que instalar en nuestro sistema python, y asegurarnos que tanto el comando `python` como el comando `pip` funcionan. Para esta demostración voy a usar `python3.8`.
 
-Una vez que Python esté instalado, ejecutamos `pip install -r requirements.txt` para instalar flask y jinja
+Una vez que Python esté instalado, ejecutamos `pip install -r requirements.txt` para instalar flask, jinja2 y requests
 
 ## Segundo paso: Creamos la base del servidor
 
@@ -88,9 +88,9 @@ def index():
 ¿Y si tengo que pasarle argumentos a una URL?
 Pongamos el ejemplo de querer especificar, en la URl, que número quiero que sea el primero, y cual quiero que sea el último. En este caso podríamos usar una caracterísitica de Flask para pasar argumentos a una función de vista.
 
-Poganmos que la nueva ruta va a ser `/n/0/10`. Para eso creamos una nueva función:
+Poganmos que la nueva ruta va a ser `/n/0/10/`. Para eso creamos una nueva función:
 ```python
-@app.route('/n/<int:min_num>/<int:max_num>')
+@app.route('/n/<int:min_num>/<int:max_num>/')
 def n(min_num, max_num):
     numeros = range(min_num, max_num) # Esta función crea una array con todos los números de min a max, por ejemplo [0,1,2,3,4,5,6,7,8,9]
     context = {
@@ -101,4 +101,61 @@ def n(min_num, max_num):
     return render("index.html", context)
 ```
 
-Intenta acceder ahora a [localhost:8080/n/7/12](localhost:8080/n/7/12). ¡Todo está funcionando!
+Intenta acceder ahora a [localhost:8080/n/7/12/](localhost:8080/n/7/12). ¡Todo está funcionando!
+
+## Quinto paso: Llamando a REST
+
+Ahora que podemos mostrar los datos, es hora de conseguirlos. Para este ejemplo voy a utilizar la API de [SigUA](https://www.sigua.ua.es/), más concreamente, el punto de enlace para recuperar [todos los departamentos](https://www.sigua.ua.es/api/pub/departamentosigua/all/items). Según la [documentación oficial](https://bitbucket.org/SIGUA/apirest-doc/src/master/specs.mkd), este punto de enlace devuelve una array de objetos con la siguiente forma:
+```json
+{"properties":{
+    "count_geometrias": {
+        "type":"integer",
+        "required":true,
+        "description":"Recuento de registros de geometría vinculados a la unidad organizativa."
+    },
+    "count_ubicaciones": {
+        "type":"number",
+        "required":true,
+        "description":"Recuento de registros de ubicación de personal vinculado a la unidad organizativa."
+    },
+    "id": {
+        "type":"string",
+        "required":true
+    },
+    "nombre": {\d{2}
+        "type":"string",
+        "required":true
+        "description":"Nombre de la unidad organizativa."
+    }}}
+```
+
+Para recuperar todos estos datos en un formato cómodo para python, no hemos de hacer más que una llamada REST, y convertir el resultado de JSON a un objeto de python. Esto lo vamos a hacer, sencillamente, con el módulo `requests`.
+
+Vamos a crear una nueva plantilla llamada `datos.html`, que va a contener la esctructura para imprimir una tabla en HTML, y una nueva función en la url `/d`
+```html
+<h1>Datos</h1>
+<table style="width:100%">
+  <tr>
+    {% for title in titles %}<th>{{title}}</th>{% endfor %}
+  </tr>
+  {% for row in results %}
+  <tr>
+    {% for col in row.values() %}<td>{{col}}</td>{% endfor %}
+  </tr>
+  {% endfor %}
+</table>
+```
+```python
+@app.route('/d/')
+def d():
+    titles = ["id", "nombre", "ubicaciones", "geometrías"]
+    r = requests.get("https://www.sigua.ua.es/api/pub/departamentosigua/all/items")
+    results = r.json()
+    context = {
+        "titles": titles,
+        "results": results,
+    }
+    return render("datos.html", context)
+```
+
+Y así, con una cantidad mínima de código, puedes mostrar datos REST cómodamente en tu navegador
